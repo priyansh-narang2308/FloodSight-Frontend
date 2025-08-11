@@ -1,102 +1,250 @@
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element */
+"use client";
+
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Camera,
+  Globe,
+  Globe2,
+  ImageIcon,
+  Loader2,
+  Map,
+  MapPin,
+  Shield,
+  TrendingUp,
+  Upload,
+} from "lucide-react";
+import { useRef, useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const fileinputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [analysisType, setAnalysisType] = useState<"coordinates" | "image">(
+    "coordinates"
+  );
+  const [mapError, setMapError] = useState(true);
+  const mapRef = useRef<HTMLInputElement>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target?.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024 || !file.type.startsWith("image/")) {
+        setAlertMessage(
+          file.size > 10 * 1024 * 1024
+            ? "Image size must be less than 10MB"
+            : "Please select a valid image file"
+        );
+        setShowAlert(true);
+        return;
+      }
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setImagePreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-white">
+      <header className="border-b border-blue-100 bg-white/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto flex items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-xl">
+              <Globe className="h-6 w-6 text-blue-600" />
+            </div>
+            <h1 className="text-xl font-bold text-slate-800 tracking-tight">
+              FloodSight
+            </h1>
+          </div>
+
         </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-10 max-w-7xl space-y-8">
+        <section className="text-center space-y-3">
+          <h2 className="text-3xl font-extrabold text-slate-800 sm:text-4xl">
+            AI-Powered Flood Risk Analysis
+          </h2>
+          <p className="text-slate-600 max-w-2xl mx-auto">
+            Analyze flood risk using precise coordinates or terrain images with
+            advanced AI algorithms.
+          </p>
+        </section>
+
+        <section className="grid gap-6 md:grid-cols-2">
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-xl hover:shadow-2xl transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-blue-500" />
+                Choose Analysis Method
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="coordinates" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-slate-100">
+                  <TabsTrigger
+                    value="coordinates"
+                    className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    Coordinates
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="image"
+                    className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                    Image
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="coordinates" className="space-y-4 mt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="latitude">Latitude</Label>
+                      <Input
+                        type="number"
+                        placeholder="Enter latitude"
+                        id="latitude"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="longitude">Longitude</Label>
+                      <Input
+                        type="number"
+                        placeholder="Enter longitude"
+                        id="longitude"
+                      />
+                    </div>
+                  </div>
+                  <Button className="w-full">
+                    <MapPin className="mr-2 h-4" /> Analyze Coordinates
+                  </Button>
+                </TabsContent>
+
+                {/* Image Tab */}
+                <TabsContent value="image" className="mt-6 space-y-4">
+                  <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      ref={fileinputRef}
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    {!imagePreview ? (
+                      <div className="space-y-4">
+                        <Upload className="h-12 w-12 mx-auto text-slate-400" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">
+                            Upload terrain image
+                          </p>
+                          <p className="text-xs mt-1 text-slate-500">
+                            JPG, PNG, or GIF up to 10MB
+                          </p>
+                        </div>
+                        <Button
+                          onClick={() => fileinputRef.current?.click()}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Camera className="mr-2 h-4 w-4" /> Choose Image
+                        </Button>
+                      </div>
+                    ) : (
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-h-48 mx-auto rounded-lg shadow-lg"
+                      />
+                    )}
+                    <Button className="w-full mt-4">
+                      <ImageIcon className="mr-2 h-4 w-4" />
+                      Analyze Image
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                Risk Assessment
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex flex-col items-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
+                  <p className="text-slate-500">
+                    {analysisType === "coordinates"
+                      ? "Analyzing Coordinates..."
+                      : "Analyzing Image..."}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-slate-500 italic">
+                  Results will be displayed here after analysis.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        <section>
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe2 className="h-5 w-5 text-blue-600" />
+                Interactive Map
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {mapError ? (
+                <div className="w-full h-80 rounded-lg border border-slate-200 bg-slate-50 flex flex-col items-center justify-center text-center">
+                  <Map className="h-16 w-16 text-slate-300 mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-700 mb-1">
+                    Map Not Available
+                  </h3>
+                  <p className="text-slate-500 text-sm max-w-md">
+                    To enable the interactive map, set up a Google Maps API in
+                    your <code>.env.local</code> file.
+                  </p>
+                </div>
+              ) : (
+                <div id="map" ref={mapRef} className="w-full h-80 rounded-lg border border-slate-800"></div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Input Error</AlertDialogTitle>
+              <AlertDialogDescription>
+                {alertMessage}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="mt-10 py-6 text-center text-xs text-slate-500 border-t border-slate-200">
+        © {new Date().getFullYear()} FloodSight. All rights reserved.
       </footer>
     </div>
   );
