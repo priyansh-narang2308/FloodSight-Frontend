@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌊 Flood Detection System
 
-## Getting Started
+A lean and efficient MVP for flood risk assessment that allows users to enter coordinates or upload images for AI-powered analysis.
 
-First, run the development server:
+## Features
+
+- **Coordinate Analysis**: Enter latitude and longitude for location-based flood risk assessment
+- **Image Analysis**: Upload terrain photos for AI-powered visual analysis
+- **Interactive Map**: Visualize locations with risk overlay
+- **AI-Powered**: Uses Google's Gemini AI for intelligent analysis
+- **Clean UI**: Modern, responsive design with shadcn/ui components
+
+## Quick Start
+
+### Option 1: Start Both Servers Together (Recommended)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Set up Gemini API key
+cd backend
+echo "GEMINI_API_KEY=your_gemini_api_key_here" > .env
+
+# Start both servers
+./start-dev.sh
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Access the app at:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Option 2: Start Servers Separately
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Backend Setup
+```bash
+cd backend
+python3 -m pip install -r requirements.txt
+echo "GEMINI_API_KEY=your_gemini_api_key_here" > .env
+python3 start.py
+```
 
-## Learn More
+#### Frontend Setup
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## How to Use
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Coordinate Analysis**: Enter latitude and longitude coordinates
+2. **Image Analysis**: Upload terrain photos for AI assessment
+3. **View Results**: See risk level, elevation, distance from water, and recommendations
+4. **Interactive Map**: Visualize the location with risk overlay
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API Endpoints
 
-## Deploy on Vercel
+- `POST /api/analyze/coordinates` - Analyze flood risk by coordinates
+- `POST /api/analyze/image` - Analyze flood risk by image upload
+- `GET /health` - Health check
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Technical Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Frontend
+- Next.js 15 with App Router
+- TypeScript
+- Tailwind CSS + shadcn/ui
+- Google Maps JavaScript API
+
+### Backend
+- FastAPI
+- Google Gemini AI
+- Python 3.9+
+- Pydantic for validation
+
+## Project Structure
+
+```
+flood-analyser/
+├── app/page.tsx           # Main flood detection component
+├── backend/main.py        # FastAPI application with Gemini AI
+├── backend/start.py       # Startup script
+├── start-dev.sh          # Development script
+└── README.md             # Documentation
+```
+
+## Setup Requirements
+
+1. **Gemini API Key**: Get from [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. **Google Maps API Key** (optional): For interactive map functionality
+
+## Development
+
+```bash
+# Quick start
+./start-dev.sh
+
+# Individual development
+npm run dev          # Frontend
+cd backend && python3 start.py  # Backend
+```
+
+The app is now lean and focused on the core flood detection functionality with AI-powered analysis.
